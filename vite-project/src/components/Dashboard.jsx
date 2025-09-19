@@ -12,6 +12,9 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// --- رابط الخادم الجديد والنهائي ---
+const API_BASE_URL = 'https://lecture-booking-system.onrender.com';
+
 function Dashboard({ onLogout, onToggleColorMode }) {
   const [halls, setHalls] = useState([]);
   const [newHallName, setNewHallName] = useState('');
@@ -23,7 +26,7 @@ function Dashboard({ onLogout, onToggleColorMode }) {
   useEffect(() => {
     const fetchHalls = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/halls');
+        const response = await fetch(`${API_BASE_URL}/api/halls`);
         const data = await response.json();
         setHalls(data);
       } catch (error) {
@@ -36,7 +39,7 @@ function Dashboard({ onLogout, onToggleColorMode }) {
   const handleAddHall = async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/halls', {
+      const response = await fetch(`${API_BASE_URL}/api/halls`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newHallName, capacity: newHallCapacity }),
@@ -52,7 +55,7 @@ function Dashboard({ onLogout, onToggleColorMode }) {
 
   const handleDeleteHall = async (hallIdToDelete) => {
     try {
-      await fetch(`http://localhost:5000/api/halls/${hallIdToDelete}`, {
+      await fetch(`${API_BASE_URL}/api/halls/${hallIdToDelete}`, {
         method: 'DELETE',
       });
       setHalls(halls.filter(hall => hall.id !== hallIdToDelete));
@@ -68,7 +71,7 @@ function Dashboard({ onLogout, onToggleColorMode }) {
   
   const handleUpdateHall = async (hallId) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/halls/${hallId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/halls/${hallId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedHallData),
