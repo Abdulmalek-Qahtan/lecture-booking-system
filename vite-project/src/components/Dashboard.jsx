@@ -12,7 +12,6 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- رابط الخادم الجديد والنهائي ---
 const API_BASE_URL = 'https://lecture-booking-system.onrender.com';
 
 function Dashboard({ onLogout, onToggleColorMode }) {
@@ -148,12 +147,11 @@ function Dashboard({ onLogout, onToggleColorMode }) {
                           <TableCell>{hall.name}</TableCell>
                           <TableCell align="right">{hall.capacity}</TableCell>
                           <TableCell align="center">
-                            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
-                              <IconButton onClick={() => handleEditClick(hall)}><EditIcon /></IconButton>
-                            </motion.div>
-                            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
-                              <IconButton onClick={() => handleDeleteHall(hall.id)} color="error"><DeleteIcon /></IconButton>
-                            </motion.div>
+                            {/* --- هنا تم التعديل الوحيد --- */}
+                            {/* تمت إزالة motion.div وحركة التكبير من حول الأيقونات */}
+                            <IconButton onClick={() => handleEditClick(hall)}><EditIcon /></IconButton>
+                            <IconButton onClick={() => handleDeleteHall(hall.id)} color="error"><DeleteIcon /></IconButton>
+                            {/* ----------------------------- */}
                           </TableCell>
                         </>
                       )}
