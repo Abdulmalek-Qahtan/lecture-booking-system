@@ -1,0 +1,8 @@
+/* Import Google Font: Cairo */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+
+body {
+  margin: 0;
+  font-family: 'Cairo', sans-serif; /* Use Cairo as the default font */
+  background-color: #121212; /* A nicer dark background */
+}
