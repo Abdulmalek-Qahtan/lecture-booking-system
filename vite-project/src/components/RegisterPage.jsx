@@ -1,10 +1,84 @@
 import { useState } from 'react';
-import { Container, Box, Typography, TextField, Button, Alert, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Link as RouterLink, Outlet, NavLink } from 'react-router-dom';
+import { 
+  Container, Box, Typography, TextField, Button, Alert, FormControl, InputLabel, Select, MenuItem, Link,
+  AppBar, Toolbar, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText
+} from '@mui/material';
+import { Dashboard as DashboardIcon, People as PeopleIcon, MeetingRoom as MeetingRoomIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-function RegisterPage({ onShowLogin }) {
+// Layout Component
+function Layout() {
+  const drawerWidth = 240;
+
+  const navigationItems = [
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
+    { text: 'Users', icon: <PeopleIcon />, path: '/users' },
+    { text: 'Halls', icon: <MeetingRoomIcon />, path: '/halls' },
+  ];
+
+  return (
+    <Box sx={{ display: 'flex' }}>
+      {/* Sidebar Drawer */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+          },
+        }}
+      >
+        <Toolbar />
+        <Box sx={{ overflow: 'auto' }}>
+          <List>
+            {navigationItems.map((item) => (
+              <ListItem key={item.text} disablePadding>
+                <ListItemButton
+                  component={NavLink}
+                  to={item.path}
+                  sx={{
+                    '&.active': {
+                      backgroundColor: 'primary.main',
+                      color: 'primary.contrastText',
+                      '& .MuiListItemIcon-root': {
+                        color: 'primary.contrastText',
+                      },
+                    },
+                  }}
+                >
+                  <ListItemIcon>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      </Drawer>
+
+      {/* Main Content Area */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+        }}
+      >
+        <Toolbar />
+        <Outlet />
+      </Box>
+    </Box>
+  );
+}
+
+function RegisterPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('admin');
@@ -56,9 +130,9 @@ function RegisterPage({ onShowLogin }) {
             <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 1 }}>
               إنشاء الحساب
             </Button>
-            <Button fullWidth onClick={onShowLogin}>
+            <Link component={RouterLink} to="/login" variant="body2" sx={{ display: 'block', textAlign: 'center', mt: 1 }}>
               العودة لتسجيل الدخول
-            </Button>
+            </Link>
           </Box>
         </Box>
       </motion.div>
@@ -67,3 +141,4 @@ function RegisterPage({ onShowLogin }) {
 }
 
 export default RegisterPage;
+export { Layout };
