@@ -37,6 +37,8 @@ const BookingSchema = new mongoose.Schema({
   hall: { type: mongoose.Schema.Types.ObjectId, ref: 'Hall', required: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   subject: { type: String, required: true },
+  department: { type: String, required: true },
+  level: { type: String, required: true },
   date: { type: Date, required: true },
   startTime: { type: String, required: true },
   endTime: { type: String, required: true },
@@ -175,7 +177,7 @@ app.put('/api/halls/:id', adminAuth, async (req, res) => {
 // --- ***تعديل***: Endpoint لتقديم طلب حجز مع التحقق من التعارض ---
 app.post('/api/bookings/request', async (req, res) => {
   try {
-    const { hall, user, date, startTime, endTime, subject } = req.body;
+    const { hall, user, date, startTime, endTime, subject, department, level } = req.body;
     
     // تحويل التاريخ لضمان المقارنة الصحيحة
     const bookingDate = new Date(date);
@@ -196,7 +198,17 @@ app.post('/api/bookings/request', async (req, res) => {
       return res.status(409).json({ message: 'عذرًا، هذه القاعة محجوزة بالفعل في هذا الوقت' });
     }
 
-    const newBooking = new Booking({ hall, user, date, startTime, endTime, subject, status: 'pending' });
+    const newBooking = new Booking({ 
+      hall, 
+      user, 
+      date, 
+      startTime, 
+      endTime, 
+      subject, 
+      department, 
+      level, 
+      status: 'pending' 
+    });
     await newBooking.save();
     res.status(201).json({ message: 'Booking request submitted successfully' });
   } catch (err) {
@@ -304,6 +316,21 @@ app.get('/api/public/bookings', async (req, res) => {
     res.json(bookings);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch public bookings' });
+  }
+});
+
+// --- Recent bookings endpoint for admin dashboard ---
+app.get('/api/bookings/recent', adminAuth, async (req, res) => {
+  try {
+    const recentBookings = await Booking.find()
+      .populate('hall', 'name')
+      .populate('user', 'username')
+      .sort({ createdAt: -1 })
+      .limit(5);
+    
+    res.json(recentBookings);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch recent bookings' });
   }
 });
 

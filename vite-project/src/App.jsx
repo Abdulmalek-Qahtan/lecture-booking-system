@@ -12,9 +12,7 @@ import Dashboard from './components/Dashboard.jsx';
 import BookingRequestsPage from './pages/BookingRequestsPage.jsx';
 import UsersPage from './pages/UsersPage.jsx'; // <-- استيراد الصفحة الحقيقية
 import CalendarPage from './pages/CalendarPage.jsx';
-
-// صفحة مؤقتة
-const HallsPage = () => <Typography variant="h4">صفحة إدارة القاعات (موجودة في لوحة التحكم الرئيسية)</Typography>;
+import HallsPage from './pages/HallsPage.jsx';
 
 // مكون لحماية روابط الأدمن
 const AdminRoute = ({ children, user }) => {

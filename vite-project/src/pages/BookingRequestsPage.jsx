@@ -142,6 +142,8 @@ function BookingRequestsPage() {
               <TableCell>اسم القاعة</TableCell>
               <TableCell>المستخدم</TableCell>
               <TableCell>المادة</TableCell>
+              <TableCell>القسم</TableCell>
+              <TableCell>المستوى</TableCell>
               <TableCell>التاريخ</TableCell>
               <TableCell>الوقت</TableCell>
               <TableCell>الحالة</TableCell>
@@ -151,7 +153,7 @@ function BookingRequestsPage() {
           <TableBody>
             {bookings.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} align="center">
+                <TableCell colSpan={9} align="center">
                   <Typography variant="body2" color="text.secondary">
                     لا توجد طلبات حجز
                   </Typography>
@@ -163,6 +165,8 @@ function BookingRequestsPage() {
                   <TableCell>{booking.hall?.name || 'غير محدد'}</TableCell>
                   <TableCell>{booking.user?.username || 'غير محدد'}</TableCell>
                   <TableCell>{booking.subject || 'غير محدد'}</TableCell>
+                  <TableCell>{booking.department || 'غير محدد'}</TableCell>
+                  <TableCell>{booking.level || 'غير محدد'}</TableCell>
                   <TableCell>{new Date(booking.date).toLocaleDateString('ar-SA')}</TableCell>
                   <TableCell>{`${booking.startTime || '-'} - ${booking.endTime || '-'}`}</TableCell>
                   <TableCell>{getStatusChip(booking.status)}</TableCell>
