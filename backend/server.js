@@ -1,67 +1,79 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-let lectureHalls = [
-  { id: 1, name: 'القاعة الأولى', capacity: 50, available: true },
-  { id: 2, name: 'القاعة الثانية', capacity: 100, available: false },
-  { id: 3, name: 'قاعة الاجتماعات', capacity: 25, available: true },
-];
+// الاتصال بقاعدة البيانات
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connected successfully'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-// Endpoint for login
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  if (username === 'admin' && password === '12345') {
-    res.json({ success: true, message: 'تم تسجيل الدخول بنجاح' });
-  } else {
-    res.status(401).json({ success: false, message: 'اسم المستخدم أو كلمة المرور خاطئة' });
+// --- تعريف شكل بيانات القاعات (Hall) ---
+const HallSchema = new mongoose.Schema({ /* ... الكود هنا لم يتغير ... */ });
+const Hall = mongoose.model('Hall', HallSchema);
+
+// --- الإضافة الجديدة: تعريف شكل بيانات المستخدم (User) ---
+const UserSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, default: 'student' } // admin, doctor, student
+});
+const User = mongoose.model('User', UserSchema);
+// ----------------------------------------------------
+
+// --- Endpoints ---
+
+// **Endpoint جديد: إنشاء حساب مستخدم**
+app.post('/api/register', async (req, res) => {
+  try {
+    const { username, password, role } = req.body;
+    // تشفير كلمة المرور
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = new User({
+      username,
+      password: hashedPassword,
+      role
+    });
+    await newUser.save();
+    res.status(201).json({ message: 'User created successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
-// Endpoint to GET all halls (Read)
-app.get('/api/halls', (req, res) => {
-  res.json(lectureHalls);
-});
-
-// Endpoint to POST a new hall (Create)
-app.post('/api/halls', (req, res) => {
-  const { name, capacity } = req.body;
-  const newHall = {
-    id: Date.now(),
-    name,
-    capacity: parseInt(capacity),
-    available: true,
-  };
-  lectureHalls.push(newHall);
-  res.status(201).json(newHall);
-});
-
-// Endpoint to DELETE a hall (Delete)
-app.delete('/api/halls/:id', (req, res) => {
-  const { id } = req.params;
-  lectureHalls = lectureHalls.filter(hall => hall.id !== parseInt(id));
-  res.status(200).json({ message: 'تم الحذف بنجاح' });
-});
-
-// Endpoint to PUT (update) a hall (Update)
-app.put('/api/halls/:id', (req, res) => {
-  const { id } = req.params;
-  const { name, capacity } = req.body;
-  const hallIndex = lectureHalls.findIndex(hall => hall.id === parseInt(id));
-
-  if (hallIndex !== -1) {
-    lectureHalls[hallIndex].name = name || lectureHalls[hallIndex].name;
-    lectureHalls[hallIndex].capacity = parseInt(capacity) || lectureHalls[hallIndex].capacity;
-    res.json(lectureHalls[hallIndex]);
-  } else {
-    res.status(404).json({ message: 'القاعة غير موجودة' });
+// **Endpoint معدل: تسجيل الدخول**
+app.post('/api/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(401).json({ message: 'اسم المستخدم أو كلمة المرور خاطئة' });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'اسم المستخدم أو كلمة المرور خاطئة' });
+    }
+    // إنشاء توكن (Token) لتأكيد تسجيل الدخول
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET || 'your_default_secret', { expiresIn: '1h' });
+    res.json({ success: true, message: 'تم تسجيل الدخول بنجاح', token });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
+
+
+// ... (بقية Endpoints الخاصة بالقاعات GET, POST, DELETE, PUT لم تتغير) ...
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

@@ -1,61 +1,47 @@
-import { useState, useMemo, useEffect } from 'react'; // <-- إضافة useEffect
+import { useState, useMemo, useEffect } from 'react';
 import LoginPage from './components/LoginPage.jsx';
 import Dashboard from './components/Dashboard.jsx';
+import RegisterPage from './components/RegisterPage.jsx'; // <-- استيراد الصفحة الجديدة
 
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
 function App() {
-  // 1. عند بدء التشغيل، تحقق من الـ LocalStorage
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true';
-  });
-  
+  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('isLoggedIn') === 'true');
   const [mode, setMode] = useState('dark');
+  const [currentView, setCurrentView] = useState('login'); // 'login', 'register', or 'dashboard'
 
-  // 2. استخدم useEffect لتحديث الـ LocalStorage عند كل تغيير
   useEffect(() => {
     localStorage.setItem('isLoggedIn', isLoggedIn);
+    if (isLoggedIn) {
+      setCurrentView('dashboard');
+    } else {
+      setCurrentView('login');
+    }
   }, [isLoggedIn]);
 
-  const toggleColorMode = () => {
-    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-  };
-
-  const theme = useMemo(() => createTheme({
-    direction: 'rtl',
-    palette: {
-      mode,
-      ...(mode === 'light'
-        ? {
-            primary: { main: '#1DA1F2' },
-            background: { default: '#FFFFFF', paper: '#F5F8FA' },
-            text: { primary: '#14171A' },
-          }
-        : {
-            primary: { main: '#1DA1F2' },
-            background: { default: '#15202B', paper: '#192734' },
-            text: { primary: '#FFFFFF' },
-          }),
-    },
-    typography: {
-      fontFamily: 'Cairo, sans-serif',
-      button: { textTransform: 'none', fontWeight: 700 },
-    },
-  }), [mode]);
-
-  // 3. الدوال الآن تتحكم في الحالة والـ LocalStorage معًا
+  const toggleColorMode = () => setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  const theme = useMemo(() => createTheme({ /* ... الثيم لم يتغير ... */ }), [mode]);
   const handleLoginSuccess = () => setIsLoggedIn(true);
   const handleLogout = () => setIsLoggedIn(false);
+
+  // --- دالة لتحديد ما يتم عرضه ---
+  const renderView = () => {
+    switch (currentView) {
+      case 'dashboard':
+        return <Dashboard onLogout={handleLogout} onToggleColorMode={toggleColorMode} />;
+      case 'register':
+        return <RegisterPage onShowLogin={() => setCurrentView('login')} />;
+      case 'login':
+      default:
+        return <LoginPage onLoginSuccess={handleLoginSuccess} onShowRegister={() => setCurrentView('register')} />;
+    }
+  };
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {isLoggedIn ? (
-        <Dashboard onLogout={handleLogout} onToggleColorMode={toggleColorMode} />
-      ) : (
-        <LoginPage onLoginSuccess={handleLoginSuccess} />
-      )}
+      {renderView()}
     </ThemeProvider>
   );
 }
