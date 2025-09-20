@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import LoginPage from './components/LoginPage.jsx';
 import Dashboard from './components/Dashboard.jsx';
-import RegisterPage from './components/RegisterPage.jsx'; // <-- استيراد الصفحة الجديدة
+import RegisterPage from './components/RegisterPage.jsx';
 
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -9,7 +9,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('isLoggedIn') === 'true');
   const [mode, setMode] = useState('dark');
-  const [currentView, setCurrentView] = useState('login'); // 'login', 'register', or 'dashboard'
+  const [currentView, setCurrentView] = useState('login');
 
   useEffect(() => {
     localStorage.setItem('isLoggedIn', isLoggedIn);
@@ -21,11 +21,32 @@ function App() {
   }, [isLoggedIn]);
 
   const toggleColorMode = () => setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-  const theme = useMemo(() => createTheme({ /* ... الثيم لم يتغير ... */ }), [mode]);
+
+  const theme = useMemo(() => createTheme({
+    direction: 'rtl',
+    palette: {
+      mode,
+      ...(mode === 'light'
+        ? {
+            primary: { main: '#1DA1F2' },
+            background: { default: '#FFFFFF', paper: '#F5F8FA' },
+            text: { primary: '#14171A' },
+          }
+        : {
+            primary: { main: '#1DA1F2' },
+            background: { default: '#15202B', paper: '#192734' },
+            text: { primary: '#FFFFFF' },
+          }),
+    },
+    typography: {
+      fontFamily: 'Cairo, sans-serif',
+      button: { textTransform: 'none', fontWeight: 700 },
+    },
+  }), [mode]);
+
   const handleLoginSuccess = () => setIsLoggedIn(true);
   const handleLogout = () => setIsLoggedIn(false);
 
-  // --- دالة لتحديد ما يتم عرضه ---
   const renderView = () => {
     switch (currentView) {
       case 'dashboard':

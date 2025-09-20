@@ -2,10 +2,8 @@ import { useState } from 'react';
 import { Container, Box, Typography, TextField, Button, Alert, Grid } from '@mui/material';
 import { motion } from 'framer-motion';
 
-// --- رابط الخادم ---
-const API_BASE_URL = 'https://lecture-booking-system.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// استقبلنا دالة onShowRegister الجديدة
 function LoginPage({ onLoginSuccess, onShowRegister }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -13,7 +11,22 @@ function LoginPage({ onLoginSuccess, onShowRegister }) {
 
   const handleLogin = async (event) => {
     event.preventDefault();
-    // ... دالة تسجيل الدخول لم تتغير ...
+    setError('');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        onLoginSuccess();
+      } else {
+        setError(data.message);
+      }
+    } catch (err) {
+      setError('فشل الاتصال بالخادم');
+    }
   };
 
   return (
@@ -24,13 +37,12 @@ function LoginPage({ onLoginSuccess, onShowRegister }) {
             تسجيل الدخول
           </Typography>
           <Box component="form" onSubmit={handleLogin} sx={{ mt: 1 }}>
-            <TextField margin="normal" required fullWidth label="اسم المستخدم" value={username} onChange={(e) => setUsername(e.target.value)} />
+            <TextField margin="normal" required fullWidth label="اسم المستخدم" value={username} onChange={(e) => setUsername(e.target.value)} autoFocus />
             <TextField margin="normal" required fullWidth label="كلمة المرور" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
             {error && <Alert severity="error" sx={{ width: '100%', mt: 1 }}>{error}</Alert>}
             <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
               دخول
             </Button>
-            {/* --- الإضافة الجديدة --- */}
             <Grid container justifyContent="flex-end">
               <Grid item>
                 <Button onClick={onShowRegister}>
@@ -38,7 +50,6 @@ function LoginPage({ onLoginSuccess, onShowRegister }) {
                 </Button>
               </Grid>
             </Grid>
-            {/* -------------------- */}
           </Box>
         </Box>
       </motion.div>

@@ -2,14 +2,12 @@ import { useState } from 'react';
 import { Container, Box, Typography, TextField, Button, Alert, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { motion } from 'framer-motion';
 
-// --- رابط الخادم ---
-const API_BASE_URL = 'https://lecture-booking-system.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-// مررنا دالة onShowLogin لكي نتمكن من العودة لصفحة الدخول
 function RegisterPage({ onShowLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('admin'); // Default role
+  const [role, setRole] = useState('admin');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -26,9 +24,9 @@ function RegisterPage({ onShowLogin }) {
       const data = await response.json();
       
       if (response.ok) {
-        setMessage(data.message);
+        setMessage("تم إنشاء الحساب بنجاح! يمكنك الآن العودة لتسجيل الدخول.");
       } else {
-        setError(data.message);
+        setError(data.message || 'حدث خطأ غير متوقع');
       }
     } catch (err) {
       setError('فشل الاتصال بالخادم');
@@ -53,10 +51,8 @@ function RegisterPage({ onShowLogin }) {
                 <MenuItem value="student">طالب</MenuItem>
               </Select>
             </FormControl>
-
             {message && <Alert severity="success" sx={{ width: '100%', mt: 2 }}>{message}</Alert>}
             {error && <Alert severity="error" sx={{ width: '100%', mt: 2 }}>{error}</Alert>}
-            
             <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 1 }}>
               إنشاء الحساب
             </Button>

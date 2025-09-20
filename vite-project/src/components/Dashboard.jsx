@@ -12,7 +12,7 @@ import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const API_BASE_URL = 'https://lecture-booking-system.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function Dashboard({ onLogout, onToggleColorMode }) {
   const [halls, setHalls] = useState([]);
@@ -57,14 +57,14 @@ function Dashboard({ onLogout, onToggleColorMode }) {
       await fetch(`${API_BASE_URL}/api/halls/${hallIdToDelete}`, {
         method: 'DELETE',
       });
-      setHalls(halls.filter(hall => hall.id !== hallIdToDelete));
+      setHalls(halls.filter(hall => hall._id !== hallIdToDelete));
     } catch (error) {
       console.error('فشل في حذف القاعة:', error);
     }
   };
 
   const handleEditClick = (hall) => {
-    setEditingHallId(hall.id);
+    setEditingHallId(hall._id);
     setUpdatedHallData({ name: hall.name, capacity: hall.capacity });
   };
   
@@ -76,7 +76,7 @@ function Dashboard({ onLogout, onToggleColorMode }) {
         body: JSON.stringify(updatedHallData),
       });
       const updatedHall = await response.json();
-      setHalls(halls.map(hall => (hall.id === hallId ? updatedHall : hall)));
+      setHalls(halls.map(hall => (hall._id === hallId ? updatedHall : hall)));
       setEditingHallId(null);
     } catch (error) {
       console.error('فشل في تحديث القاعة:', error);
@@ -126,20 +126,18 @@ function Dashboard({ onLogout, onToggleColorMode }) {
                 <AnimatePresence>
                   {halls.map((hall) => (
                     <motion.tr
-                      key={hall.id}
+                      key={hall._id}
                       layout
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0, x: 50, transition: { duration: 0.3 } }}
                     >
-                      {editingHallId === hall.id ? (
+                      {editingHallId === hall._id ? (
                         <>
                           <TableCell><TextField size="small" variant="standard" value={updatedHallData.name} onChange={(e) => setUpdatedHallData({ ...updatedHallData, name: e.target.value })} /></TableCell>
                           <TableCell align="right"><TextField size="small" variant="standard" type="number" value={updatedHallData.capacity} onChange={(e) => setUpdatedHallData({ ...updatedHallData, capacity: e.target.value })} /></TableCell>
                           <TableCell align="center">
-                            <motion.div whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.9 }}>
-                              <IconButton onClick={() => handleUpdateHall(hall.id)} color="primary"><SaveIcon /></IconButton>
-                            </motion.div>
+                            <IconButton onClick={() => handleUpdateHall(hall._id)} color="primary"><SaveIcon /></IconButton>
                           </TableCell>
                         </>
                       ) : (
@@ -147,11 +145,8 @@ function Dashboard({ onLogout, onToggleColorMode }) {
                           <TableCell>{hall.name}</TableCell>
                           <TableCell align="right">{hall.capacity}</TableCell>
                           <TableCell align="center">
-                            {/* --- هنا تم التعديل الوحيد --- */}
-                            {/* تمت إزالة motion.div وحركة التكبير من حول الأيقونات */}
                             <IconButton onClick={() => handleEditClick(hall)}><EditIcon /></IconButton>
-                            <IconButton onClick={() => handleDeleteHall(hall.id)} color="error"><DeleteIcon /></IconButton>
-                            {/* ----------------------------- */}
+                            <IconButton onClick={() => handleDeleteHall(hall._id)} color="error"><DeleteIcon /></IconButton>
                           </TableCell>
                         </>
                       )}
