@@ -17,7 +17,9 @@ app.get('/', (req, res) => {
 });
 
 // --- الاتصال بقاعدة البيانات ---
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {
+  serverSelectionTimeoutMS: 30000
+})
   .then(() => console.log('MongoDB connected successfully'))
   .catch(err => console.error('MongoDB connection error:', err));
 
