@@ -226,9 +226,13 @@ function DoctorView({ user, halls }) {
 
 // --- واجهة الطالب ---
 const StudentView = () => {
+  const [department, setDepartment] = useState('');
+  const [level, setLevel] = useState('');
   const [bookings, setBookings] = useState([]);
+  const [filteredBookings, setFilteredBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch all approved bookings
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -247,6 +251,29 @@ const StudentView = () => {
     fetchBookings();
   }, []);
 
+  // Filter bookings based on department and level
+  useEffect(() => {
+    let filtered = bookings;
+
+    if (department.trim() !== '') {
+      filtered = filtered.filter(booking => 
+        booking.department?.toLowerCase().includes(department.toLowerCase())
+      );
+    }
+
+    if (level.trim() !== '') {
+      filtered = filtered.filter(booking => 
+        booking.level?.toLowerCase().includes(level.toLowerCase())
+      );
+    }
+
+    setFilteredBookings(filtered);
+  }, [department, level, bookings]);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   if (loading) {
     return (
       <Container maxWidth="lg">
@@ -264,44 +291,83 @@ const StudentView = () => {
           الجدول العام للحجوزات
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          عرض جميع الحجوزات المعتمدة
+          عرض جميع الحجوزات المعتمدة مع إمكانية التصفية والطباعة
         </Typography>
       </Box>
 
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>القاعة</TableCell>
-              <TableCell>المادة</TableCell>
-              <TableCell>الدكتور</TableCell>
-              <TableCell>التاريخ</TableCell>
-              <TableCell>الوقت</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {bookings.length === 0 ? (
+      {/* Filters Section */}
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          تصفية النتائج
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <TextField
+            label="القسم"
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            variant="outlined"
+            size="small"
+            sx={{ minWidth: 200 }}
+          />
+          <TextField
+            label="المستوى"
+            value={level}
+            onChange={(e) => setLevel(e.target.value)}
+            variant="outlined"
+            size="small"
+            sx={{ minWidth: 200 }}
+          />
+          <Button
+            variant="contained"
+            onClick={handlePrint}
+            sx={{ ml: 'auto' }}
+          >
+            طباعة الجدول
+          </Button>
+        </Box>
+      </Paper>
+
+      {/* Schedule Table */}
+      <div id="schedule-to-print">
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
               <TableRow>
-                <TableCell colSpan={5} align="center">
-                  <Typography variant="body2" color="text.secondary">
-                    لا توجد حجوزات معتمدة متاحة حاليًا
-                  </Typography>
-                </TableCell>
+                <TableCell>القاعة</TableCell>
+                <TableCell>المادة</TableCell>
+                <TableCell>القسم</TableCell>
+                <TableCell>المستوى</TableCell>
+                <TableCell>الدكتور</TableCell>
+                <TableCell>التاريخ</TableCell>
+                <TableCell>الوقت</TableCell>
               </TableRow>
-            ) : (
-              bookings.map((booking) => (
-                <TableRow key={booking._id}>
-                  <TableCell>{booking.hall?.name || 'غير محدد'}</TableCell>
-                  <TableCell>{booking.subject || 'غير محدد'}</TableCell>
-                  <TableCell>{booking.user?.username || 'غير محدد'}</TableCell>
-                  <TableCell>{new Date(booking.date).toLocaleDateString('ar-SA')}</TableCell>
-                  <TableCell>{`${booking.startTime || '-'} - ${booking.endTime || '-'}`}</TableCell>
+            </TableHead>
+            <TableBody>
+              {filteredBookings.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    <Typography variant="body2" color="text.secondary">
+                      لا توجد حجوزات معتمدة متاحة حاليًا
+                    </Typography>
+                  </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              ) : (
+                filteredBookings.map((booking) => (
+                  <TableRow key={booking._id}>
+                    <TableCell>{booking.hall?.name || 'غير محدد'}</TableCell>
+                    <TableCell>{booking.subject || 'غير محدد'}</TableCell>
+                    <TableCell>{booking.department || 'غير محدد'}</TableCell>
+                    <TableCell>{booking.level || 'غير محدد'}</TableCell>
+                    <TableCell>{booking.user?.username || 'غير محدد'}</TableCell>
+                    <TableCell>{new Date(booking.date).toLocaleDateString('ar-SA')}</TableCell>
+                    <TableCell>{`${booking.startTime || '-'} - ${booking.endTime || '-'}`}</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </div>
     </Container>
   );
 };

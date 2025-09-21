@@ -230,12 +230,12 @@ app.get('/api/bookings', adminAuth, async (req, res) => {
 app.put('/api/bookings/:id/status', adminAuth, async (req, res) => {
   try {
     const { status } = req.body;
-    if (!status || !['approved', 'rejected'].includes(status)) {
+    if (!status || !['pending', 'approved', 'rejected'].includes(status)) {
       return res.status(400).json({ message: 'Invalid status value' });
     }
 
-    // If status is 'rejected', it's safe to update directly
-    if (status === 'rejected') {
+    // If status is 'rejected' or 'pending', it's safe to update directly
+    if (status === 'rejected' || status === 'pending') {
       const updatedBooking = await Booking.findByIdAndUpdate(req.params.id, { status }, { new: true });
       if (!updatedBooking) {
         return res.status(404).json({ message: 'Booking not found' });
@@ -308,7 +308,20 @@ app.get('/api/stats/summary', adminAuth, async (req, res) => {
 // --- Public endpoint for approved bookings ---
 app.get('/api/public/bookings', async (req, res) => {
   try {
-    const bookings = await Booking.find({ status: 'approved' })
+    // Build dynamic query object
+    const query = { status: 'approved' };
+    
+    // Add department filter if provided and not empty
+    if (req.query.department && req.query.department.trim() !== '') {
+      query.department = req.query.department;
+    }
+    
+    // Add level filter if provided and not empty
+    if (req.query.level && req.query.level.trim() !== '') {
+      query.level = req.query.level;
+    }
+    
+    const bookings = await Booking.find(query)
       .populate('hall', 'name')
       .populate('user', 'username')
       .sort({ date: 1, startTime: 1 });

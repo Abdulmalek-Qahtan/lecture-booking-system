@@ -14,7 +14,7 @@ import {
   Box,
   Alert
 } from '@mui/material';
-import { CheckCircle as ApproveIcon, Cancel as RejectIcon } from '@mui/icons-material';
+import { CheckCircle as ApproveIcon, Cancel as RejectIcon, Edit as EditIcon } from '@mui/icons-material';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -171,7 +171,7 @@ function BookingRequestsPage() {
                   <TableCell>{`${booking.startTime || '-'} - ${booking.endTime || '-'}`}</TableCell>
                   <TableCell>{getStatusChip(booking.status)}</TableCell>
                   <TableCell align="center">
-                    {booking.status === 'pending' && (
+                    {booking.status === 'pending' ? (
                       <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                         <Button
                           variant="contained"
@@ -192,6 +192,15 @@ function BookingRequestsPage() {
                           رفض
                         </Button>
                       </Box>
+                    ) : (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<EditIcon />}
+                        onClick={() => handleUpdateStatus(booking._id, 'pending')}
+                      >
+                        تعديل القرار
+                      </Button>
                     )}
                   </TableCell>
                 </TableRow>
